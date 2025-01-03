@@ -3,14 +3,16 @@
 import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import Twist
-from moon_servo import MotorDriver  # Replace with actual module/class from moon_servo
+from moon_servo import MoonServoMotor  # Replace with actual module/class from moon_servo
+
 
 class MotorControllerNode(Node):
     def __init__(self):
         super().__init__('motor_controller')
         
-        # Initialize the motor driver
-        self.motor_driver = MotorDriver()  # Replace with actual initialization code
+        # Initialize the motor with the desired parameters (passing port and baudrate directly)
+        motor = MoonServoMotor(port='/dev/ttyUSB0', baudrate=115200, base_address=0)  # Use port and baudrate here
+
 
         # Subscribe to cmd_vel topic
         self.subscription = self.create_subscription(
