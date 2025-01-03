@@ -22,4 +22,10 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 endif()
 
+# Install Python scripts
+install(PROGRAMS
+  src/motor_node.py
+  DESTINATION lib/${PROJECT_NAME}
+)
+
 ament_package()
