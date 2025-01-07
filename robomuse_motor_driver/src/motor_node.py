@@ -14,7 +14,9 @@ class MotorControllerNode(Node):
         self.motor_driver = MoonServoMotor(port='/dev/ttyUSB0', baudrate=115200, base_address=0)  # Use port and baudrate here
         self.motor_driver.connect()
         self.motor_driver.enable_driver1()
+        self.motor_driver.enable_driver2()
         self.motor_driver.start_jogging1()
+        self.motor_driver.start_jogging2()
 
         # Subscribe to cmd_vel topic
         self.subscription = self.create_subscription(
@@ -42,6 +44,7 @@ class MotorControllerNode(Node):
             right_motor_speed = int(right_motor_speed)
             # Send commands to the motor driver
             self.motor_driver.set_speed1(left_motor_speed, right_motor_speed)
+            self.motor_driver.set_speed2(left_motor_speed, right_motor_speed)
 
             self.get_logger().info(f"Set motor speeds: Left={left_motor_speed}, Right={right_motor_speed}")
         except Exception as e:
@@ -73,3 +76,6 @@ def main(args=None):
 
 if __name__ == '__main__':
     main()
+
+
+
