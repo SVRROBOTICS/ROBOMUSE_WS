@@ -37,8 +37,8 @@ class MotorControllerNode(Node):
             linear_velocity = msg.linear.x  # Forward/backward velocity
             angular_velocity = msg.angular.z  # Rotational velocity
 
-            self.get_logger().info(f"Received linear velocity: {linear_velocity}")
-            self.get_logger().info(f"Received angular velocity: {angular_velocity}")
+            self.get_logger().info(f"Received linear velocity from cmd_vel: {linear_velocity}")
+            self.get_logger().info(f"Received angular velocity from cmd_vel: {angular_velocity}")
 
             # Convert cmd_vel to motor commands
             left_motor_speed, right_motor_speed = self.calculate_motor_speeds(linear_velocity, angular_velocity)
