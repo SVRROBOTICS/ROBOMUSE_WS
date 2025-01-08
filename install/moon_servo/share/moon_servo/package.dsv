@@ -1,0 +1,6 @@
+source;share/moon_servo/hook/pythonpath.ps1
+source;share/moon_servo/hook/pythonpath.dsv
+source;share/moon_servo/hook/pythonpath.sh
+source;../../build/moon_servo/share/moon_servo/hook/pythonpath_develop.ps1
+source;../../build/moon_servo/share/moon_servo/hook/pythonpath_develop.dsv
+source;../../build/moon_servo/share/moon_servo/hook/pythonpath_develop.sh

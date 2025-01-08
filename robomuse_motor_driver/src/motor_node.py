@@ -72,6 +72,30 @@ class MotorControllerNode(Node):
         right_motor_speed = linear + (angular * wheel_base / 2.0)
         
         return left_motor_speed, right_motor_speed
+    
+    def cmd_vel_to_rps(linear_velocity, angular_velocity, wheel_radius, wheel_base):
+        """
+        Convert cmd_vel (linear and angular velocity) to left and right motor RPS.
+
+        Parameters:
+            linear_velocity (float): Linear velocity in m/s.
+            angular_velocity (float): Angular velocity in rad/s.
+            wheel_radius (floa t): Radius of the wheel in meters.
+            wheel_base (float): Distance between the left and right wheels in meters.
+
+        Returns:
+            tuple: Left motor RPS, Right motor RPS.
+        """
+        # Calculate left and right wheel velocities
+        v_left = linear_velocity - (angular_velocity * wheel_base / 2)
+        v_right = linear_velocity + (angular_velocity * wheel_base / 2)
+
+        # Convert wheel velocities to revolutions per second (RPS)
+        rps_left = v_left / (2 * 3.14159 * wheel_radius)
+        rps_right = v_right / (2 * 3.14159 * wheel_radius)
+
+        return rps_left, rps_right
+
 
 def main(args=None):
     rclpy.init(args=args)
@@ -86,6 +110,3 @@ def main(args=None):
 
 if __name__ == '__main__':
     main()
-
-
-
