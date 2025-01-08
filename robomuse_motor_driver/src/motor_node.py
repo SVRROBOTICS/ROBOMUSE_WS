@@ -45,6 +45,8 @@ class MotorControllerNode(Node):
 
             left_motor_speed = int(left_motor_speed)
             right_motor_speed = int(right_motor_speed)
+            left_motor_speed = int(left_motor_speed)
+            right_motor_speed = int(right_motor_speed)
             # Send commands to the motor driver
             self.get_logger().info(f"Left motor speed: {left_motor_speed}")
             self.get_logger().info(f"Right motor speed: {right_motor_speed}")
