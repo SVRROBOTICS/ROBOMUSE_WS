@@ -4,6 +4,7 @@ import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import Twist
 from moon_servo import MoonServoMotor  # Replace with actual module/class from moon_servo
+import time  # Import time module to track execution time
 
 
 class MotorControllerNode(Node):
@@ -43,20 +44,25 @@ class MotorControllerNode(Node):
             # Convert cmd_vel to motor commands
             left_motor_speed, right_motor_speed = self.calculate_motor_speeds(linear_velocity, angular_velocity)
 
-            left_motor_speed = float(left_motor_speed)
-            right_motor_speed = float(right_motor_speed)
-            #left_motor_speed = int(left_motor_speed)
-            #right_motor_speed = int(right_motor_speed)
-            # Send commands to the motor driver
             self.get_logger().info(f"Left motor speed: {left_motor_speed}")
             self.get_logger().info(f"Right motor speed: {right_motor_speed}")
 
+            # Measure the time taken to execute set_speed1 (Left motor)
+            start_time1 = time.time()  # Record start time for left motor speed
             self.motor_driver.set_speed1(left_motor_speed)
+            end_time1 = time.time()  # Record end time for left motor speed
+            elapsed_time1 = end_time1 - start_time1  # Calculate elapsed time for left motor speed
+
+            # Measure the time taken to execute set_speed2 (Right motor)
+            start_time2 = time.time()  # Record start time for right motor speed
             self.motor_driver.set_speed2(right_motor_speed)
-
-
+            end_time2 = time.time()  # Record end time for right motor speed
+            elapsed_time2 = end_time2 - start_time2  # Calculate elapsed time for right motor speed
 
             self.get_logger().info(f"Set motor speeds: Left={left_motor_speed}, Right={right_motor_speed}")
+            self.get_logger().info(f"Time taken for set_speed1 (Left motor): {elapsed_time1:.6f} seconds")
+            self.get_logger().info(f"Time taken for set_speed2 (Right motor): {elapsed_time2:.6f} seconds")
+    
         except Exception as e:
             self.get_logger().error(f"Error in cmd_vel_callback: {e}")
 
@@ -80,7 +86,7 @@ class MotorControllerNode(Node):
         Parameters:
             linear_velocity (float): Linear velocity in m/s.
             angular_velocity (float): Angular velocity in rad/s.
-            wheel_radius (floa t): Radius of the wheel in meters.
+            wheel_radius (float): Radius of the wheel in meters.
             wheel_base (float): Distance between the left and right wheels in meters.
 
         Returns:
