@@ -7,6 +7,8 @@ from tf2_ros.transform_broadcaster import TransformBroadcaster
 from tf_transformations import quaternion_from_euler
 import logging
 from moon_servo import MoonServoMotor 
+from motor_controller import RobotController
+from utils import calculate_motor_speeds
 import time
 import os
 
@@ -23,11 +25,13 @@ class RobomuseMotorNode(Node):
 
         # Get parameters
         robot_port = self.get_parameter('robot_port').get_parameter_value().string_value
+
+        self.cmd_vel = None
         cmd_vel_timeout = self.get_parameter('cmd_vel_timeout').get_parameter_value().double_value
 
         self.robot_cmd_try = 3
         self.get_logger().info(f"Initializing the Robomuse Robot on port: {robot_port}")
-
+        self.robot_controller = RobotController()
         if not os.path.exists(robot_port):
             self.get_logger().error(f"Port {robot_port} not found.")
             self.shutdown_node("Shutting down Robot Node, since port is not available.")  # Shutdown node gracefully
@@ -77,6 +81,8 @@ class RobomuseMotorNode(Node):
         self.vel_y = msg.linear.x
         self.omega = msg.angular.z
 
+        self.cmd_vel = msg
+
         self.get_logger().info(f"Published cmd_vel to robot: x:{self.vel_x:.2f}, y:{self.vel_y:.2f}, w:{self.omega:.2f}")
         
         # try:
@@ -95,9 +101,11 @@ class RobomuseMotorNode(Node):
         encoder1 = self.robot.get_encoder1()
         encoder2 = self.robot.get_encoder2()
 
-        target_wheel_speeds = self.calculate_close_loop_speeds(encoder1, encoder2)
+        speed_left, speed_right = self.robot_controller.control_motors(encoder1, encoder2)
 
-
+        if speed_left & speed_right:
+            self.robot.set_speed1(speed_left)
+            self.robot.set_speed2(speed_right)
 
         self.get_logger().info(f"Encoder1 Value:{encoder1}, Encoder2 Value:{encoder2}, ")
         robot_pose = self.get_robot_pose(encoder1, encoder2)
