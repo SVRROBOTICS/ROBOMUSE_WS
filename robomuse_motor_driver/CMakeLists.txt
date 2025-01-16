@@ -25,6 +25,7 @@ endif()
 # Install Python scripts
 install(PROGRAMS
   src/motor_node.py
+  src/moon_motor_driver.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
