@@ -95,6 +95,10 @@ class RobomuseMotorNode(Node):
         encoder1 = self.robot.get_encoder1()
         encoder2 = self.robot.get_encoder2()
 
+        target_wheel_speeds = self.calculate_close_loop_speeds(encoder1, encoder2)
+
+
+
         self.get_logger().info(f"Encoder1 Value:{encoder1}, Encoder2 Value:{encoder2}, ")
         robot_pose = self.get_robot_pose(encoder1, encoder2)
 
