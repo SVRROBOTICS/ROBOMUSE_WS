@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import Twist, TransformStamped
@@ -36,7 +37,7 @@ class RobomuseMotorNode(Node):
         try:
             self.robot = MoonServoMotor(port='/dev/ttyUSB0', baudrate=115200, base_address=0)  # Use port and baudrate here
             self.get_logger().info("Robot initialized successfully!")
-            self.get_logger().info(f"Robot Info: {self.robot.get_info()}")
+            #self.get_logger().info(f"Robot Info: {self.robot.get_info()}")
 
             # Connect to the robot
             self.robot.connect()
@@ -105,10 +106,13 @@ class RobomuseMotorNode(Node):
         odom.header.frame_id = "odom"
 
         # Pose
-        odom.pose.pose.position.x = robot_pose.x
-        odom.pose.pose.position.y = robot_pose.y
+        
+        odom.pose.pose.position.x = float(robot_pose["x"])
+        odom.pose.pose.position.y = float(robot_pose["y"])
+
+        
         odom.pose.pose.position.z = 0.0
-        quaternion = quaternion_from_euler(0, 0, robot_pose.w)
+        quaternion = quaternion_from_euler(0, 0, robot_pose["w"])
         odom.pose.pose.orientation.x = quaternion[0]
         odom.pose.pose.orientation.y = quaternion[1]
         odom.pose.pose.orientation.z = quaternion[2]
@@ -130,8 +134,9 @@ class RobomuseMotorNode(Node):
         transform.header.stamp = current_time.to_msg()
         transform.header.frame_id = "odom"
         transform.child_frame_id = "base_link"
-        transform.transform.translation.x = robot_pose.x
-        transform.transform.translation.y = robot_pose.y
+
+        transform.transform.translation.x = float(robot_pose["x"])  # Cast to float
+        transform.transform.translation.y = float(robot_pose["y"])         
         transform.transform.translation.z = 0.0
         transform.transform.rotation.x = quaternion[0]
         transform.transform.rotation.y = quaternion[1]
