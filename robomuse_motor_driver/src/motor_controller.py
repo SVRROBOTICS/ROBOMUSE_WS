@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import logging
-import math
 from utils import calculate_motor_speeds, encoder_ticks_to_velocity
 
 # Configure logging
