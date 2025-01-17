@@ -110,7 +110,7 @@ class RobomuseMotorNode(Node):
         if speed_left is None or speed_right is None:
             self.get_logger().warn("Received invalid motor speeds (None). Skipping odometry update.")
             return
-
+        self.get_logger().info(f"Setting Wheel Speed Left: {speed_left}, Right: {speed_right}")
         self.robot.set_speed1(speed_left)
         self.robot.set_speed2(speed_right)
 

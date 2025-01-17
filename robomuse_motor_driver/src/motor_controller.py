@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 
 import logging
-from utils import calculate_motor_speeds
+import math
+from utils import calculate_motor_speeds, encoder_ticks_to_velocity
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+WHEEL_DIA = 0.0625 # in meters
 class PIDController:
     def __init__(self, kp, ki, kd, dt):
         self.kp = kp
@@ -27,18 +30,19 @@ class RobotController:
         # Store the parent node instance
         self.parent_node = parent_node
         self.cmd_vel = None  # Initialize cmd_vel attribute
+        time_delta = 1/20
         
         # Initialize PID controllers for both wheels
-        self.pid1 = PIDController(kp=1.0, ki=0.1, kd=0.01, dt=0.1)
-        self.pid2 = PIDController(kp=1.0, ki=0.1, kd=0.01, dt=0.1)
+        self.pid1 = PIDController(kp=0.1, ki=0.0, kd=0.00, dt=time_delta)
+        self.pid2 = PIDController(kp=0.1, ki=0.0, kd=0.00, dt=time_delta)
         
         # Previous encoder values to compute velocity
-        self.prev_encoder1 = self.parent_node.motor.get_encoder1()
+        self.prev_encoder1 = self.parent_node.robot.get_encoder1()
         self.prev_encoder2 = self.parent_node.robot.get_encoder2()
 
     def get_encoder1(self):
         # This function should return the current encoder value for wheel 1
-        return self.parent_node.motor.get_encoder1()
+        return self.parent_node.robot.get_encoder1()
 
     def get_encoder2(self):
         # This function should return the current encoder value for wheel 2
@@ -47,8 +51,9 @@ class RobotController:
     def calculate_velocity(self, current_encoder, prev_encoder, dt):
         # Calculate the velocity based on encoder change and time step
         delta_position = current_encoder - prev_encoder
-        velocity = delta_position / dt  # Velocity in counts per second
+        velocity = encoder_ticks_to_velocity(delta_position, dt)
         return velocity
+    
 
     def compute_pid_control(self, command_vel, current_encoder, prev_encoder, pid_controller):
         # Compute the actual velocity from encoder readings
