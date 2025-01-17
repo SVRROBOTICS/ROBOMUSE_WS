@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import math
+WHEEL_DIA = 0.0625
 def calculate_motor_speeds(linear, angular):
         """
         Convert linear and angular velocity to left and right motor speeds.
