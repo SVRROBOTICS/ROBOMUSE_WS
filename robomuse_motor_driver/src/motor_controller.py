@@ -23,7 +23,9 @@ class PIDController:
 
 class RobotController:
 
-    def __init__(self):
+    def __init__(self, parent_node):
+        # Store the parent node instance
+        self.parent_node = parent_node
         self.cmd_vel = None  # Initialize cmd_vel attribute
         
         # Initialize PID controllers for both wheels
@@ -31,16 +33,16 @@ class RobotController:
         self.pid2 = PIDController(kp=1.0, ki=0.1, kd=0.01, dt=0.1)
         
         # Previous encoder values to compute velocity
-        self.prev_encoder1 = 0
-        self.prev_encoder2 = 0
+        self.prev_encoder1 = self.parent_node.motor.get_encoder1()
+        self.prev_encoder2 = self.parent_node.robot.get_encoder2()
 
     def get_encoder1(self):
         # This function should return the current encoder value for wheel 1
-        return self.get_encoder1()
+        return self.parent_node.motor.get_encoder1()
 
     def get_encoder2(self):
         # This function should return the current encoder value for wheel 2
-        return self.get_encoder2()
+        return self.parent_node.robot.get_encoder2()
 
     def calculate_velocity(self, current_encoder, prev_encoder, dt):
         # Calculate the velocity based on encoder change and time step

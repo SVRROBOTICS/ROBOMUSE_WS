@@ -31,7 +31,6 @@ class RobomuseMotorNode(Node):
 
         self.robot_cmd_try = 3
         self.get_logger().info(f"Initializing the Robomuse Robot on port: {robot_port}")
-        self.robot_controller = RobotController()
         if not os.path.exists(robot_port):
             self.get_logger().error(f"Port {robot_port} not found.")
             self.shutdown_node("Shutting down Robot Node, since port is not available.")  # Shutdown node gracefully
@@ -40,6 +39,7 @@ class RobomuseMotorNode(Node):
         # Initialize the robot
         try:
             self.robot = MoonServoMotor(port='/dev/ttyUSB0', baudrate=115200, base_address=0)  # Use port and baudrate here
+            self.robot_controller = RobotController(self)
             self.get_logger().info("Robot initialized successfully!")
             #self.get_logger().info(f"Robot Info: {self.robot.get_info()}")
 
