@@ -49,6 +49,8 @@ class RobomuseMotorNode(Node):
             self.robot.enable_driver2()
             self.robot.start_jogging1()
             self.robot.start_jogging2()
+            self.robot.reset_encoder(0)
+            self.robot.reset_encoder(1000)
    
             time.sleep(2)
         except Exception as e:
@@ -77,37 +79,42 @@ class RobomuseMotorNode(Node):
         self.last_time = self.get_clock().now()
 
         # Convert ROS frame velocities to robot frame velocities
-        self.vel_x = msg.linear.y
-        self.vel_y = msg.linear.x
+        self.vel_x = msg.linear.x
+        self.vel_y = msg.linear.y
         self.omega = msg.angular.z
 
         self.cmd_vel = msg
 
-        self.get_logger().info(f"Published cmd_vel to robot: x:{self.vel_x:.2f}, y:{self.vel_y:.2f}, w:{self.omega:.2f}")
-        
-        # try:
-        #     # Setting Velocity relative to robot base / base_link
-        #     for _ in range(self.robot_cmd_try):
-        #         self.robot.set_vel_relative(self.vel_x, self.vel_y, self.omega, acc=500, dec=500)
-        # except Exception as e:
-        #     self.get_logger().error(f"Error setting velocity: {e}")
+        # Detailed print/logging for debugging
+        print(f"\nReceived cmd_vel:")
+        print(f"  Linear Velocity:")
+        print(f"    x (forward): {self.vel_x:.2f} m/s")
+        print(f"    y (sideways): {self.vel_y:.2f} m/s")
+        print(f"  Angular Velocity:")
+        print(f"    z (rotation): {self.omega:.2f} rad/s")
+
+        self.get_logger().info(f"Published cmd_vel to robot: x: {self.vel_x:.2f}, y: {self.vel_y:.2f}, w: {self.omega:.2f}")
+
 
     def publish_odometry(self):
         """Publishes odometry information."""
-
         current_time = self.get_clock().now()
 
         # Get robot pose in its local frame
         encoder1 = self.robot.get_encoder1()
         encoder2 = self.robot.get_encoder2()
 
-        speed_left, speed_right = self.robot_controller.control_motors(encoder1, encoder2)
+        # Get motor speeds
+        speed_left, speed_right = self.robot_controller.control_motors(encoder1, encoder2, self.cmd_vel)
 
-        if speed_left & speed_right:
-            self.robot.set_speed1(speed_left)
-            self.robot.set_speed2(speed_right)
+        if speed_left is None or speed_right is None:
+            self.get_logger().warn("Received invalid motor speeds (None). Skipping odometry update.")
+            return
 
-        self.get_logger().info(f"Encoder1 Value:{encoder1}, Encoder2 Value:{encoder2}, ")
+        self.robot.set_speed1(speed_left)
+        self.robot.set_speed2(speed_right)
+
+        self.get_logger().info(f"Encoder1 Value: {encoder1}, Encoder2 Value: {encoder2}")
         robot_pose = self.get_robot_pose(encoder1, encoder2)
 
         self.get_logger().info(f"Robot Pose from Hardware API: {robot_pose}")
@@ -118,11 +125,8 @@ class RobomuseMotorNode(Node):
         odom.header.frame_id = "odom"
 
         # Pose
-        
         odom.pose.pose.position.x = float(robot_pose["x"])
         odom.pose.pose.position.y = float(robot_pose["y"])
-
-        
         odom.pose.pose.position.z = 0.0
         quaternion = quaternion_from_euler(0, 0, robot_pose["w"])
         odom.pose.pose.orientation.x = quaternion[0]
@@ -137,8 +141,6 @@ class RobomuseMotorNode(Node):
         odom.twist.twist.angular.z = 0.0
 
         # Publish odometry
-
-        # self.get_logger().info(f"Publishing ODOM, Position X:{odom.pose.pose.position.x},Y:{odom.pose.pose.position.y}, Omega:{ros_theta}")
         self.odom_pub.publish(odom)
 
         # Broadcast transform
