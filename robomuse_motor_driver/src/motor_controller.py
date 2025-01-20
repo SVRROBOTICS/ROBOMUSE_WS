@@ -33,7 +33,7 @@ class RobotController:
         
         # Initialize PID controllers for both wheels
         self.pid1 = PIDController(kp=0.1, ki=0.0, kd=0.00, dt=time_delta)
-        self.pid2 = PIDController(kp=0.1, ki=0.0, kd=0.00, dt=time_delta)
+        self.pid2 = PIDController(kp=0.11, ki=0.0, kd=0.00, dt=time_delta)
         
         # Previous encoder values to compute velocity
         self.prev_encoder1 = self.parent_node.robot.get_encoder1()
@@ -105,3 +105,14 @@ class RobotController:
         wheel_speed_cmd = pid_controller.update(error)
         
         return wheel_speed_cmd
+    
+
+
+
+
+
+
+
+
+
+

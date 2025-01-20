@@ -11,6 +11,7 @@ from motor_controller import RobotController
 from utils import calculate_motor_speeds
 import time
 import os
+import math
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] [%(filename)s:%(lineno)d] %(message)s")
@@ -47,10 +48,11 @@ class RobomuseMotorNode(Node):
             self.robot.connect()
             self.robot.enable_driver1()
             self.robot.enable_driver2()
+            self.robot.reset_encoder1()
+            self.robot.reset_encoder2()
             self.robot.start_jogging1()
             self.robot.start_jogging2()
-            self.robot.reset_encoder(0)
-            self.robot.reset_encoder(1000)
+
    
             time.sleep(2)
         except Exception as e:
@@ -102,6 +104,7 @@ class RobomuseMotorNode(Node):
 
         # Get robot pose in its local frame
         encoder1 = self.robot.get_encoder1()
+        
         encoder2 = self.robot.get_encoder2()
 
         # Get motor speeds
@@ -176,6 +179,8 @@ class RobomuseMotorNode(Node):
         wheel_base = 0.5
         
         return {"x":0, "y":0, "w":0}
+
+
     
 def main(args=None):
     rclpy.init(args=args)
