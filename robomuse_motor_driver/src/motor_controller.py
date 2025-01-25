@@ -32,8 +32,8 @@ class RobotController:
         time_delta = 1/20
         
         # Initialize PID controllers for both wheels
-        self.pid1 = PIDController(kp=0.1, ki=0.0, kd=0.00, dt=time_delta)
-        self.pid2 = PIDController(kp=0.11, ki=0.0, kd=0.00, dt=time_delta)
+        self.pid1 = PIDController(kp=1.5, ki=0.015, kd=0.00, dt=time_delta)
+        self.pid2 = PIDController(kp=1.5,ki=0.015, kd=0.00, dt=time_delta)
         
         # Previous encoder values to compute velocity
         self.prev_encoder1 = self.parent_node.robot.get_encoder1()
@@ -93,26 +93,3 @@ class RobotController:
         
         # Return the calculated speed commands for both motors
         return speed_cmd1, speed_cmd2
-    
-    def compute_pid_control(self, command_vel, current_encoder, prev_encoder, pid_controller):
-        # Compute the actual velocity from encoder readings
-        actual_velocity = self.calculate_velocity(current_encoder, prev_encoder, pid_controller.dt)
-        
-        # Compute the error between the desired velocity and the actual velocity
-        error = command_vel - actual_velocity
-        
-        # Use PID controller to compute the new control signal (wheel speed command)
-        wheel_speed_cmd = pid_controller.update(error)
-        
-        return wheel_speed_cmd
-    
-
-
-
-
-
-
-
-
-
-

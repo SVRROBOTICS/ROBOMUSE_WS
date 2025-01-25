@@ -48,12 +48,11 @@ class RobomuseMotorNode(Node):
             self.robot.connect()
             self.robot.enable_driver1()
             self.robot.enable_driver2()
-            self.robot.reset_encoder1()
-            self.robot.reset_encoder2()
             self.robot.start_jogging1()
             self.robot.start_jogging2()
+            self.robot.reset_encoder1()           
+            self.robot.reset_encoder2()
 
-   
             time.sleep(2)
         except Exception as e:
             self.get_logger().error(f"Failed to initialize the robot: {e}")
@@ -114,8 +113,9 @@ class RobomuseMotorNode(Node):
             self.get_logger().warn("Received invalid motor speeds (None). Skipping odometry update.")
             return
         self.get_logger().info(f"Setting Wheel Speed Left: {speed_left}, Right: {speed_right}")
-        self.robot.set_speed1(speed_left)
         self.robot.set_speed2(speed_right)
+        self.robot.set_speed1(speed_left)
+      
 
         self.get_logger().info(f"Encoder1 Value: {encoder1}, Encoder2 Value: {encoder2}")
         robot_pose = self.get_robot_pose(encoder1, encoder2)
@@ -192,6 +192,7 @@ def main(args=None):
     finally:
         try:
             rclpy.shutdown()  # Safe shutdown attempt
+            
         except RuntimeError:
             pass  # Ignore error if rclpy is not initialized
 
