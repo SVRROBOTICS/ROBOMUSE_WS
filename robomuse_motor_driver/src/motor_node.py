@@ -2,7 +2,7 @@
 import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import Twist
-from moon_servo import MoonServoMotor  # Replace with actual module/class from moon_servo
+from moon_servo import MoonServoMotor  # Replace with the actual module/class from moon_servo
 
 
 class MotorControllerNode(Node):
@@ -11,11 +11,25 @@ class MotorControllerNode(Node):
 
         # Motor initialization
         self.motor_driver = MoonServoMotor(port='/dev/ttyUSB0', baudrate=115200, base_address=0)
+
+        # Connect to the motor driver
         self.motor_driver.connect()
+
+        # Enable the motor drivers
         self.motor_driver.enable_driver1()
         self.motor_driver.enable_driver2()
+
+        # Reset motor encoders to ensure accurate motion tracking
         self.motor_driver.reset_encoder1()
         self.motor_driver.reset_encoder2()
+
+        # Set default acceleration and deceleration values for smooth motion control
+        self.motor_driver.set_acceleration1(300)  # Set acceleration for motor 1
+        self.motor_driver.set_deceleration1(300)  # Set deceleration for motor 1
+        self.motor_driver.set_acceleration2(300)  # Set acceleration for motor 2
+        self.motor_driver.set_deceleration2(300)  # Set deceleration for motor 2
+
+        # Start jogging mode for both motors (continuous motion control)
         self.motor_driver.start_jogging1()
         self.motor_driver.start_jogging2()
 
@@ -46,18 +60,6 @@ class MotorControllerNode(Node):
 
             # Convert to motor speeds
             left_motor_speed, right_motor_speed = self.calculate_motor_speeds(linear_velocity, angular_velocity)
-
-            # Determine acceleration or deceleration for the left motor
-            if left_motor_speed > self.current_left_speed:
-                self.motor_driver.set_acceleration1(300)  # Example acceleration value
-            else: 
-                self.motor_driver.set_deceleration1(300)  # Example deceleration value
-
-            # Determine acceleration or deceleration for the right motor
-            if right_motor_speed > self.current_right_speed:
-                self.motor_driver.set_acceleration2(300)  # Example acceleration value
-            else:
-                self.motor_driver.set_deceleration2(300)  # Example deceleration value
 
             # Send motor speed commands
             self.motor_driver.set_speed1(left_motor_speed)
@@ -115,4 +117,3 @@ def main(args=None):
 
 if __name__ == '__main__':
     main()
-
