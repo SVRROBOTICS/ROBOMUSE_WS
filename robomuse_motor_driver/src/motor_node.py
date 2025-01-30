@@ -30,7 +30,8 @@ class MotorControllerNode(Node):
         # Robot parameters
         self.wheel_diameter = 0.125  # 125 mm = 0.125 m
         self.wheel_base = 0.5  # Distance between the two wheels
-        self.encoder_resolution = 392700  # Computed encoder resolution considering gearbox ratio
+        self.gear_ratio = 20   # 1:20 Gear Ratio
+        self.encoder_ppr = 10132  # Computed encoder resolution considering gearbox ratio
 
         # Odometry state
         self.x = 0.0
