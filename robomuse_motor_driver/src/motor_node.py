@@ -32,6 +32,7 @@ class MotorControllerNode(Node):
         self.wheel_base = 0.5  # Distance between the two wheels
         self.gear_ratio = 20   # 1:20 Gear Ratio
         self.encoder_ppr = 10132  # Computed encoder resolution considering gearbox ratio
+        self.encoder_resolution = 502400
 
         # Odometry state
         self.x = 0.0
@@ -81,16 +82,16 @@ class MotorControllerNode(Node):
     def publish_odometry(self):
         current_time = self.get_clock().now()
         delta_time = (current_time - self.last_time).nanoseconds / 1e9
+        if delta_time == 0:  # Prevent division by zero
+            return
         self.last_time = current_time
 
         # Get encoder ticks
         left_ticks = self.motor_driver.get_encoder1()
         right_ticks = self.motor_driver.get_encoder2()
 
-
         # Log encoder values
-        self.get_logger().info(f"Left encoder ticks: {left_ticks}")
-        self.get_logger().info(f"Right encoder ticks: {right_ticks}")        
+        self.get_logger().info(f"Left encoder ticks: {left_ticks}, Right encoder ticks: {right_ticks}")
 
         # Compute tick differences
         delta_left_ticks = left_ticks - self.prev_left_ticks
@@ -100,21 +101,24 @@ class MotorControllerNode(Node):
         self.prev_left_ticks = left_ticks
         self.prev_right_ticks = right_ticks
 
-        # Convert ticks to distances
-        left_distance = (delta_left_ticks / self.encoder_resolution) * math.pi * self.wheel_diameter
-        right_distance = (delta_right_ticks / self.encoder_resolution) * math.pi * self.wheel_diameter
+        # Convert ticks to distances (meters)
+        left_distance = delta_left_ticks / self.encoder_resolution
+        right_distance = delta_right_ticks / self.encoder_resolution
 
         # Compute change in pose
         delta_distance = (left_distance + right_distance) / 2.0
-        delta_theta = (right_distance - left_distance) / self.wheel_base
+        delta_theta = (right_distance - left_distance) / self.wheel_base  # Corrected formula
 
         # Update pose
-        self.x += delta_distance * math.cos(self.theta)
-        self.y += delta_distance * math.sin(self.theta)
+        self.x += delta_distance * math.cos(self.theta + delta_theta / 2.0)
+        self.y += delta_distance * math.sin(self.theta + delta_theta / 2.0)
         self.theta += delta_theta
 
-        # Log the differences
-        self.get_logger().info(f"Encoder Tick Differences: Left={delta_left_ticks}, Right={delta_right_ticks}")
+        # Normalize theta to keep it within [-π, π]
+        self.theta = math.atan2(math.sin(self.theta), math.cos(self.theta))
+
+        # Log differences
+        self.get_logger().info(f"Delta Distance: {delta_distance}, Delta Theta: {delta_theta}")
 
         # Create odometry message
         odom = Odometry()
@@ -140,7 +144,7 @@ class MotorControllerNode(Node):
         transform.transform.translation.y = self.y
         transform.transform.rotation = odom.pose.pose.orientation
         self.tf_broadcaster.sendTransform(transform)
-
+        
     def shutdown_motors(self):
         try:
             self.motor_driver.stop_jogging1()
