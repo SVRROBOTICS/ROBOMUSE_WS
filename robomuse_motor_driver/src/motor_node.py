@@ -32,7 +32,7 @@ class MotorControllerNode(Node):
         self.wheel_base = 0.5  # Distance between the two wheels
         self.gear_ratio = 20   # 1:20 Gear Ratio
         self.encoder_ppr = 10132  # Computed encoder resolution considering gearbox ratio
-        self.encoder_resolution = 502400
+        self.encoder_resolution = 502400.00
 
         # Odometry state
         self.x = 0.0
@@ -87,15 +87,15 @@ class MotorControllerNode(Node):
         self.last_time = current_time
 
         # Get encoder ticks
-        left_ticks = self.motor_driver.get_encoder1()
-        right_ticks = self.motor_driver.get_encoder2()
+        left_ticks = float(self.motor_driver.get_encoder1())
+        right_ticks = float(self.motor_driver.get_encoder2())
 
         # Log encoder values
         self.get_logger().info(f"Left encoder ticks: {left_ticks}, Right encoder ticks: {right_ticks}")
 
-        # Compute tick differences
-        delta_left_ticks = left_ticks - self.prev_left_ticks
-        delta_right_ticks = right_ticks - self.prev_right_ticks
+        # Compute tick differences (ensure float calculations)
+        delta_left_ticks = float(left_ticks - self.prev_left_ticks)
+        delta_right_ticks = float(right_ticks - self.prev_right_ticks)
 
         # Store previous values
         self.prev_left_ticks = left_ticks
@@ -108,11 +108,11 @@ class MotorControllerNode(Node):
         # Compute change in pose
         delta_distance = (left_distance + right_distance) / 2.0
         delta_theta = (right_distance - left_distance) / self.wheel_base  # Corrected formula
+        self.theta += delta_theta
 
         # Update pose
-        self.x += delta_distance * math.cos(self.theta + delta_theta / 2.0)
-        self.y += delta_distance * math.sin(self.theta + delta_theta / 2.0)
-        self.theta += delta_theta
+        self.x += delta_distance * math.cos(self.theta)
+        self.y += delta_distance * math.sin(self.theta)
 
         # Normalize theta to keep it within [-π, π]
         self.theta = math.atan2(math.sin(self.theta), math.cos(self.theta))
