@@ -114,11 +114,9 @@ class MotorControllerNode(Node):
         self.x += delta_distance * math.cos(self.theta)
         self.y += delta_distance * math.sin(self.theta)
 
-        # Normalize theta to keep it within [-π, π]
-        self.theta = math.atan2(math.sin(self.theta), math.cos(self.theta))
 
         # Log differences
-        self.get_logger().info(f"Delta Distance: {delta_distance}, Delta Theta: {delta_theta}")
+        self.get_logger().info(f"Delta Distance: {delta_distance}, Theta: {self.theta}")
 
         # Create odometry message
         odom = Odometry()
