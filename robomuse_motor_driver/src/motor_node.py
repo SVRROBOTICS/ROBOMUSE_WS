@@ -41,8 +41,8 @@ class MotorControllerNode(Node):
         self.last_time = self.get_clock().now()
 
         # Previous encoder values
-        self.prev_left_ticks = 0
-        self.prev_right_ticks = 0
+        self.prev_left_ticks = 0.0
+        self.prev_right_ticks = 0.0
 
         # ROS publishers
         self.odom_publisher = self.create_publisher(Odometry, 'odom', 10)
@@ -89,6 +89,9 @@ class MotorControllerNode(Node):
         # Get encoder ticks
         left_ticks = float(self.motor_driver.get_encoder1())
         right_ticks = float(self.motor_driver.get_encoder2())
+
+        left_ticks = float(self.motor_driver.get_encoder1() or self.prev_left_ticks)
+        right_ticks = float(self.motor_driver.get_encoder2() or self.prev_right_ticks)
 
         # Log encoder values
         self.get_logger().info(f"Left encoder ticks: {left_ticks}, Right encoder ticks: {right_ticks}")
