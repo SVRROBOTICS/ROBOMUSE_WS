@@ -87,9 +87,6 @@ class MotorControllerNode(Node):
         self.last_time = current_time
 
         # Get encoder ticks
-        left_ticks = float(self.motor_driver.get_encoder1())
-        right_ticks = float(self.motor_driver.get_encoder2())
-
         left_ticks = float(self.motor_driver.get_encoder1() or self.prev_left_ticks)
         right_ticks = float(self.motor_driver.get_encoder2() or self.prev_right_ticks)
 
