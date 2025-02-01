@@ -31,8 +31,9 @@ class MotorControllerNode(Node):
         self.wheel_diameter = 0.125  # 125 mm = 0.125 m
         self.wheel_base = 0.5  # Distance between the two wheels
         self.gear_ratio = 20   # 1:20 Gear Ratio
-        self.encoder_ppr = 10132  # Computed encoder resolution considering gearbox ratio
-        self.encoder_resolution = 502400.00
+        self.encoder_ppr = 10000  # Computed encoder resolution considering gearbox ratio
+        self.encoder_resolution = (self.encoder_ppr * self.gear_ratio)/(math.pi * self.wheel_diameter)
+        # self.encoder_resolution = 502400.00
 
         # Odometry state
         self.x = 0.0
