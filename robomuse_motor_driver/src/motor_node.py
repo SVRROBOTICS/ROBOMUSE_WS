@@ -20,19 +20,20 @@ class MotorControllerNode(Node):
         self.motor_driver.enable_driver2()
         self.motor_driver.reset_encoder1()
         self.motor_driver.reset_encoder2()
-        self.motor_driver.set_acceleration1(300)
-        self.motor_driver.set_deceleration1(300)
-        self.motor_driver.set_acceleration2(300)
-        self.motor_driver.set_deceleration2(300)
+        self.motor_driver.set_acceleration1(700)
+        self.motor_driver.set_deceleration1(700)
+        self.motor_driver.set_acceleration2(700)
+        self.motor_driver.set_deceleration2(700)
         self.motor_driver.start_jogging1()
         self.motor_driver.start_jogging2()
 
         # Robot parameters
         self.wheel_diameter = 0.125  # 125 mm = 0.125 m
-        self.wheel_base = 0.5  # Distance between the two wheels
+        self.wheel_base = 0.6  # Distance between the two wheels
         self.gear_ratio = 20   # 1:20 Gear Ratio
-        self.encoder_ppr = 10132  # Computed encoder resolution considering gearbox ratio
-        self.encoder_resolution = 502400.00
+        self.encoder_ppr = 10000  # Computed encoder resolution considering gearbox ratio
+        self.encoder_resolution = (self.encoder_ppr * self.gear_ratio)/(math.pi * self.wheel_diameter)
+        # self.encoder_resolution = 502400.00
 
         # Odometry state
         self.x = 0.0
