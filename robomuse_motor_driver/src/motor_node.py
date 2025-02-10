@@ -5,6 +5,7 @@ from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry
 from tf2_ros import TransformBroadcaster
 from geometry_msgs.msg import TransformStamped
+from tf_transformations import quaternion_from_euler
 from moon_servo import MoonServoMotor  # Replace with actual module/class from moon_servo
 import math
 
@@ -121,13 +122,22 @@ class MotorControllerNode(Node):
 
         # Create odometry message
         odom = Odometry()
+        current_time = self.get_clock().now()  # Get latest ROS time
+        odom.header.stamp = current_time.to_msg()
         odom.header.stamp = current_time.to_msg()
         odom.header.frame_id = 'odom'
         odom.child_frame_id = 'base_link'
         odom.pose.pose.position.x = self.x
         odom.pose.pose.position.y = self.y
-        odom.pose.pose.orientation.z = math.sin(self.theta / 2.0)
-        odom.pose.pose.orientation.w = math.cos(self.theta / 2.0)
+
+        # Convert theta (yaw) to quaternion
+        qx, qy, qz, qw = quaternion_from_euler(0, 0, self.theta)
+
+        odom.pose.pose.orientation.x = qx
+        odom.pose.pose.orientation.y = qy
+        odom.pose.pose.orientation.z = qz
+        odom.pose.pose.orientation.w = qw
+
         odom.twist.twist.linear.x = delta_distance / delta_time
         odom.twist.twist.angular.z = delta_theta / delta_time
 
@@ -141,7 +151,13 @@ class MotorControllerNode(Node):
         transform.child_frame_id = 'base_link'
         transform.transform.translation.x = self.x
         transform.transform.translation.y = self.y
-        transform.transform.rotation = odom.pose.pose.orientation
+
+        # Use the same quaternion for the TF transform
+        transform.transform.rotation.x = qx
+        transform.transform.rotation.y = qy
+        transform.transform.rotation.z = qz
+        transform.transform.rotation.w = qw
+
         self.tf_broadcaster.sendTransform(transform)
         
     def shutdown_motors(self):
