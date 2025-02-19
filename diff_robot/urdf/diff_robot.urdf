@@ -28,7 +28,7 @@
     </inertial>
     <visual>
         <geometry>  
-            <box size="0.75 0.54 0.2"/> 
+            <box size="0.7 0.4 0.2"/> 
         </geometry>   
         <origin xyz="0.0 0.0 0.1" rpy="0.0 0.0 0.0"/> 
         <material name="green"/>
@@ -152,13 +152,13 @@
 <joint name="base_lidar_joint" type="fixed">
     <parent link="base_link"/>
     <child link="lidar_link"/>
-    <origin xyz="0.0 0.0 0.20" rpy="0.0 0.0 0.0"/>
+    <origin xyz="0.0 0.0 0.225" rpy="0.0 0.0 0.0"/>
 </joint>
 
 <joint name="left_wheel_joint" type="continuous">
     <parent link="base_link"/>
     <child link="left_wheel"/>
-    <origin xyz="0.0 0.3 0.0" rpy="0 0.0 0.0"/>  
+    <origin xyz="-0.175 0.225 0.0" rpy="0 0.0 0.0"/>  
     <axis xyz="0.0 1.0 0.0"/>
     <dynamics damping="0.2" friction="1.0"/>
     <limit effort="100" velocity="1.0"/>
@@ -166,7 +166,7 @@
 <joint name="right_wheel_joint" type="continuous">
     <parent link="base_link"/>
     <child link="right_wheel"/>
-    <origin xyz="0.0 -0.3 0.0" rpy="0 0.0 0.0"/>  
+    <origin xyz="-0.175 -0.225 0.0" rpy="0 0.0 0.0"/>  
     <axis xyz="0.0 1.0 0.0"/>
     <dynamics damping="0.2" friction="1.0"/>
     <limit effort="100" velocity="1.0"/>
@@ -215,7 +215,7 @@
     </sensor>
 </gazebo>
 
-  <gazebo reference="lidar_link">
+  <gazebo reference="lidar">
     <sensor name="laser" type="ray">
         <pose> 0 0 0 0 0 0 </pose>
         <visualize>true</visualize>

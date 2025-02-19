@@ -1,32 +1,44 @@
-#!/usr/bin/env python3
-
 import os
-
-from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument
-from launch.actions import LogInfo
+from launch.actions import DeclareLaunchArgument, ExecuteProcess
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
+from ament_index_python.packages import get_package_share_directory
 
 
 def generate_launch_description():
+    # File paths
+    urdf_file_path = '/home/svr/ROBOMUSE_WS/src/diff_robot/urdf/robomuse.urdf'
+    rviz_config_file_path = '/home/svr/ROBOMUSE_WS/src/diff_robot/urdf/robomuse_rviz.rviz'
+    world_file_path = '/home/svr/ROBOMUSE_WS/src/diff_robot/world/silverstone_track.world'
     channel_type =  LaunchConfiguration('channel_type', default='serial')
     serial_port = LaunchConfiguration('serial_port', default='/dev/ttyUSB1')
     serial_baudrate = LaunchConfiguration('serial_baudrate', default='256000')
-    frame_id = LaunchConfiguration('frame_id', default='laser')
+    frame_id = LaunchConfiguration('frame_id', default='lidar')
     inverted = LaunchConfiguration('inverted', default='false')
     angle_compensate = LaunchConfiguration('angle_compensate', default='true')
     scan_mode = LaunchConfiguration('scan_mode', default='Sensitivity')
 	
+    # Load robot description from URDF file
+    with open(urdf_file_path, 'r') as infp:
+        robot_desc = infp.read()
+
     rviz_config_dir = os.path.join(
             get_package_share_directory('rplidar_ros'),
             'rviz',
-            'rplidar_ros.rviz')
-
+            'rplidar_ros.rviz')    
 
     return LaunchDescription([
-
+        # Declare launch arguments
+        DeclareLaunchArgument(
+            name='model',
+            default_value=urdf_file_path,
+            description='Absolute path to robot URDF file'),
+        DeclareLaunchArgument(
+            name='rvizconfig',
+            default_value=rviz_config_file_path,
+            description='Absolute path to RViz config file'),
+        
         DeclareLaunchArgument(
             'channel_type',
             default_value=channel_type,
@@ -61,6 +73,12 @@ def generate_launch_description():
             default_value=scan_mode,
             description='Specifying scan mode of lidar'),
 
+        # Publish the robot state (robot_description topic)
+        Node(package='robot_state_publisher', executable='robot_state_publisher',
+             output='screen',
+             parameters=[{'robot_description': robot_desc}],
+             remappings=[("/diff_drive_controller/cmd_vel_unstamped", "/cmd_vel")]),
+
         Node(
             package='rplidar_ros',
             executable='rplidar_node',
@@ -75,12 +93,15 @@ def generate_launch_description():
                          }],
             output='screen'),
 
-        Node(
-            package='rviz2',
-            executable='rviz2',
-            name='rviz2',
-            arguments=['-d', rviz_config_dir],
-            output='screen'),
-              
-    ])
+        # Launch RViz
+        Node(package='rviz2', executable='rviz2',
+             name='rviz2',
+             output='screen',
+             arguments=['-d', LaunchConfiguration('rvizconfig')]),
 
+        Node(package='robomuse_motor_driver',
+             executable='motor_node.py',
+             name='motor_node',
+             output='screen'),
+        
+    ])
