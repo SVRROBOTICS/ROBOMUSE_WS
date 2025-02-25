@@ -103,5 +103,19 @@ def generate_launch_description():
              executable='motor_node.py',
              name='motor_node',
              output='screen'),
+
+        Node(
+            package="tf2_ros",
+            executable="static_transform_publisher",
+            arguments=["0", "0", "0", "0", "0", "0", "map", "odom"],
+            output="screen"
+        ),
+        Node(
+            package='lidar_filter',
+            executable='lidar_filter',
+            name='lidar_filter',
+            output='screen',
+        )
+        
         
     ])
