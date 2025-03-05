@@ -73,8 +73,10 @@ def generate_launch_description():
                          'angle_compensate': angle_compensate,
                            'scan_mode': scan_mode
                          }],
-            output='screen'),
+            output='screen',
+            arguments=['--ros-args', '--remap', 'scan:=scan_raw']  # Add remapping here
 
+        ),
         Node(
             package='rviz2',
             executable='rviz2',

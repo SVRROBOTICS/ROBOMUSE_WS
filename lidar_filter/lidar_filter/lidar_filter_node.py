@@ -12,7 +12,7 @@ class LidarFilterNode(Node):
         # Subscriber to the raw Lidar scan
         self.subscription = self.create_subscription(
             LaserScan,
-            '/scan',
+            '/scan_raw',
             self.lidar_callback,
             10)
         
@@ -24,7 +24,7 @@ class LidarFilterNode(Node):
     def lidar_callback(self, msg: LaserScan):
         # Retrieve filter angles and reconstruct as pairs
         raw_values = self.get_parameter('filter_angles').get_parameter_value().double_array_value
-        filter_ranges = list(zip(raw_values[::2], raw_values[1::2]))  # ✅ Reconstruct pairs
+        filter_ranges = list(zip(raw_values[::2], raw_values[1::2]))  #  Reconstruct pairs
 
         filtered_msg = msg
         angle_increment = msg.angle_increment

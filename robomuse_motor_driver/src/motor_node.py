@@ -60,7 +60,7 @@ class MotorControllerNode(Node):
         self.get_logger().info("MotorControllerNode has been started.")
 
         # Timer for publishing odometry
-        self.create_timer(0.05, self.publish_odometry)  # 40 Hz
+        self.create_timer(1/40, self.publish_odometry)  # 40 Hz
 
     def cmd_vel_callback(self, msg):
         try:
@@ -124,7 +124,6 @@ class MotorControllerNode(Node):
         odom = Odometry()
         current_time = self.get_clock().now()  # Get latest ROS time
         odom.header.stamp = current_time.to_msg()
-        odom.header.stamp = current_time.to_msg()
         odom.header.frame_id = 'odom'
         odom.child_frame_id = 'base_link'
         odom.pose.pose.position.x = self.x
@@ -146,6 +145,7 @@ class MotorControllerNode(Node):
 
         # Publish transform
         transform = TransformStamped()
+        current_time = self.get_clock().now()  # Get latest ROS time
         transform.header.stamp = current_time.to_msg()
         transform.header.frame_id = 'odom'
         transform.child_frame_id = 'base_link'

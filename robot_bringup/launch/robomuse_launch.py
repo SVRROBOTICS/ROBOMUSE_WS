@@ -1,3 +1,4 @@
+
 import os
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, ExecuteProcess
@@ -30,6 +31,24 @@ def generate_launch_description():
 
     return LaunchDescription([
         # Declare launch arguments
+
+
+        DeclareLaunchArgument(name='use_sim_time', default_value='true', description='Use simulation clock'),
+
+        # Spawn robot in Gazebo
+        Node(
+            package='gazebo_ros',
+            executable='spawn_entity.py',
+            arguments=['-entity', 'robomuse', '-file', urdf_file_path, '-x', '0', '-y', '0', '-z', '0.1'],
+            output='screen'
+        ),
+
+        # Start Gazebo (empty world)
+        ExecuteProcess(
+            cmd=['gazebo', '--verbose', '-s', 'libgazebo_ros_factory.so'],
+            output='screen'
+        ),
+
         DeclareLaunchArgument(
             name='model',
             default_value=urdf_file_path,
@@ -91,7 +110,10 @@ def generate_launch_description():
                          'angle_compensate': angle_compensate,
                            'scan_mode': scan_mode
                          }],
-            output='screen'),
+            output='screen',
+            arguments=['--ros-args', '--remap', 'scan:=scan_raw']  # Add remapping here
+        ),
+            
 
         # Launch RViz
         Node(package='rviz2', executable='rviz2',
@@ -104,17 +126,18 @@ def generate_launch_description():
              name='motor_node',
              output='screen'),
 
-        Node(
-            package="tf2_ros",
-            executable="static_transform_publisher",
-            arguments=["0", "0", "0", "0", "0", "0", "map", "odom"],
-            output="screen"
-        ),
+        # Node(
+        #     package="tf2_ros",
+        #     executable="static_transform_publisher",
+        #     arguments=["0", "0", "0", "0", "0", "0", "map", "odom"],
+        #     output="screen"
+        # ),
         Node(
             package='lidar_filter',
             executable='lidar_filter',
             name='lidar_filter',
             output='screen',
+            remappings=[('/scan_filtered', '/scan')]
         )
         
         
