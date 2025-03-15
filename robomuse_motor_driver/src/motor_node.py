@@ -8,6 +8,7 @@ from geometry_msgs.msg import TransformStamped
 from tf_transformations import quaternion_from_euler
 from moon_servo import MoonServoMotor  # Replace with actual module/class from moon_servo
 import math
+from rclpy.clock import Clock
 
 
 class MotorControllerNode(Node):
@@ -15,7 +16,7 @@ class MotorControllerNode(Node):
         super().__init__('motor_controller')
 
         # Motor initialization
-        self.motor_driver = MoonServoMotor(port='/dev/ttyUSB0', baudrate=115200, base_address=0)
+        self.motor_driver = MoonServoMotor(port='/dev/motor_driver', baudrate=9600, base_address=0)
         self.motor_driver.connect()
         self.motor_driver.enable_driver1()
         self.motor_driver.enable_driver2()
@@ -40,7 +41,7 @@ class MotorControllerNode(Node):
         self.x = 0.0
         self.y = 0.0
         self.theta = 0.0
-        self.last_time = self.get_clock().now()
+        self.last_time = Clock().now()  
 
         # Previous encoder values
         self.prev_left_ticks = 0.0
@@ -82,11 +83,6 @@ class MotorControllerNode(Node):
         return left_motor_speed, right_motor_speed
 
     def publish_odometry(self):
-        current_time = self.get_clock().now()
-        delta_time = (current_time - self.last_time).nanoseconds / 1e9
-        if delta_time == 0:  # Prevent division by zero
-            return
-        self.last_time = current_time
 
         # Get encoder ticks
         left_ticks = float(self.motor_driver.get_encoder1() or self.prev_left_ticks)
@@ -122,7 +118,11 @@ class MotorControllerNode(Node):
 
         # Create odometry message
         odom = Odometry()
-        current_time = self.get_clock().now()  # Get latest ROS time
+        current_time = Clock().now()  
+        delta_time = (current_time - self.last_time).nanoseconds / 1e9
+        if delta_time == 0:  # Prevent division by zero
+            return
+        self.last_time = current_time
         odom.header.stamp = current_time.to_msg()
         odom.header.frame_id = 'odom'
         odom.child_frame_id = 'base_link'
@@ -145,7 +145,7 @@ class MotorControllerNode(Node):
 
         # Publish transform
         transform = TransformStamped()
-        current_time = self.get_clock().now()  # Get latest ROS time
+        current_time = Clock().now()  
         transform.header.stamp = current_time.to_msg()
         transform.header.frame_id = 'odom'
         transform.child_frame_id = 'base_link'
@@ -166,6 +166,8 @@ class MotorControllerNode(Node):
         try:
             self.motor_driver.stop_jogging1()
             self.motor_driver.stop_jogging2()
+            self.motor_driver.reset_encoder1()
+            self.motor_driver.reset_encoder2()
             self.motor_driver.disable_driver1()
             self.motor_driver.disable_driver2()
             self.get_logger().info("Motors stopped and drivers disabled successfully.")
