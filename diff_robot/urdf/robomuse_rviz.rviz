@@ -10,6 +10,8 @@ Panels:
         - /TF1/Frames1
         - /TF1/Tree1
         - /Map1
+        - /Map2
+        - /Map3
       Splitter Ratio: 0.5
     Tree Height: 434
   - Class: rviz_common/Selection
@@ -325,7 +327,7 @@ Visualization Manager:
       Value: true
     - Alpha: 0.699999988079071
       Class: rviz_default_plugins/Map
-      Color Scheme: map
+      Color Scheme: costmap
       Draw Behind: false
       Enabled: true
       Name: Map

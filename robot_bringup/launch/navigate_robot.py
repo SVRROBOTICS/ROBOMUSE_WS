@@ -3,24 +3,26 @@ from rclpy.node import Node
 from rclpy.action import ActionClient
 from geometry_msgs.msg import PoseStamped
 from nav2_msgs.action import NavigateToPose
+import time
 
 class NavigateRobot(Node):
     def __init__(self):
         super().__init__('navigate_robot')
         self.client = ActionClient(self, NavigateToPose, '/navigate_to_pose')
         self.goal_positions = [
-            {'name': 'home', 'x': 1.9729116272811456, 'y': 1.5482711157234594, 'z': -0.22630269918781945, 'w': 0.9740570251994014},
-            {'name': 'sofa', 'x': 1.9729116272811456, 'y': 1.5482711157234594, 'z': -0.22630269918781945, 'w': 0.9740570251994014},
-            {'name': 'tv', 'x': 4.5995795293666655, 'y': -0.4191154852254095, 'z': -0.7615429442280517, 'w': 0.648114452929782},
-            {'name': 'door', 'x': 2.3200930056008406, 'y': -1.7127323542781154, 'z': 0.9998315424127682, 'w': 0.9998315424127682}
+            {'name': 'home', 'x': 0.4058098261317316, 'y': -0.24153020727258429, 'z': 0.00278071876100996, 'w': 0.9999961337941123},
+            {'name': 'Sofa', 'x': 2.6413651604488093, 'y': 0.7004190268441755, 'z': -0.6940663812029765, 'w': 0.7199110073361877},
+            {'name': 'TV', 'x': 4.790321201397294, 'y': -0.20827729058528402, 'z': 0.9990731248784613, 'w': 0.04304522209939696},
+            {'name': 'Door', 'x': 1.4313656908337922, 'y': -2.251369138635757, 'z': 0.6841051647081836, 'w': 0.7293833858949551}
         ]
         self.current_goal_index = 0  # Start from the first goal
+        self.returning_home = False  # Flag to track return to home
         self.send_next_goal()
 
     def send_next_goal(self):
-        """Send the next goal in the list, then stop after the last goal."""
+        """Send the next goal in the list, then return home after the last goal."""
         if self.current_goal_index >= len(self.goal_positions):
-            self.get_logger().info("✅ All goals reached! Stopping navigation.")
+            self.get_logger().info("✅ Navigation complete! Stopping the robot.")
             rclpy.shutdown()
             return
 
@@ -62,8 +64,18 @@ class NavigateRobot(Node):
         else:
             self.get_logger().info("❌ Goal failed!")
 
+        self.get_logger().info("⏳ Waiting for 5 seconds before proceeding to the next goal...")
+        time.sleep(5)  # Halt for 5 seconds
+
+        # If the last goal was reached and we haven't returned home yet, add home as the final goal
+        if self.current_goal_index == len(self.goal_positions) - 1 and not self.returning_home:
+            self.get_logger().info("🔄 Returning to Home...")
+            self.goal_positions.append(self.goal_positions[0])  # Append "home" as the final goal
+            self.returning_home = True  # Set flag to prevent duplicate additions
+
         self.current_goal_index += 1  # Move to the next goal
         self.send_next_goal()  # Send the next goal
+
 
 def main():
     rclpy.init()
@@ -77,13 +89,12 @@ if __name__ == '__main__':
 
 
 
-
-
-
-
-
+##############################################################
+#############################continuous in loop#######################
+###################################################################
 
 # import rclpy
+# import time
 # from rclpy.node import Node
 # from rclpy.action import ActionClient
 # from geometry_msgs.msg import PoseStamped
@@ -94,13 +105,23 @@ if __name__ == '__main__':
 #         super().__init__('navigate_robot')
 #         self.client = ActionClient(self, NavigateToPose, '/navigate_to_pose')
 #         self.goal_positions = [
-#             {'name': 'sofa', 'x': 1.9729116272811456, 'y': 1.5482711157234594, 'z': -0.22630269918781945, 'w': 0.9740570251994014},
-#             {'name': 'tv', 'x': 4.5995795293666655, 'y': -0.4191154852254095, 'z': -0.7615429442280517, 'w': 0.648114452929782},
-#             {'name': 'door', 'x': 2.3200930056008406, 'y': -1.7127323542781154, 'z': 0.9998315424127682, 'w': 0.9998315424127682}
+#             {'name': 'home', 'x': 0.4058, 'y': -0.2415, 'z': 0.0027, 'w': 0.9999},
+#             {'name': 'Sofa', 'x': 2.6413, 'y': 0.7004, 'z': -0.6940, 'w': 0.7199},
+#             {'name': 'TV', 'x': 4.7903, 'y': -0.2082, 'z': 0.9990, 'w': 0.0430},
+#             {'name': 'Door', 'x': 1.4313, 'y': -2.2513, 'z': 0.6841, 'w': 0.7293}
 #         ]
-    
-#     def send_goal(self, position):
-#         """Sends a navigation goal to the robot"""
+#         self.current_goal_index = 0  # Start from the first goal
+#         self.send_next_goal()
+
+#     def send_next_goal(self):
+#         """Send the next goal and loop indefinitely."""
+#         if self.current_goal_index >= len(self.goal_positions):
+#             self.get_logger().info("🔁 Completed one loop. Restarting from the first goal...")
+#             self.current_goal_index = 0  # Restart from the first goal
+
+#         position = self.goal_positions[self.current_goal_index]
+#         self.get_logger().info(f"🚀 Sending goal to {position['name']}: ({position['x']}, {position['y']})")
+
 #         goal_msg = NavigateToPose.Goal()
 #         goal_msg.pose.header.frame_id = 'map'
 #         goal_msg.pose.header.stamp = self.get_clock().now().to_msg()
@@ -109,49 +130,129 @@ if __name__ == '__main__':
 #         goal_msg.pose.pose.orientation.z = position['z']
 #         goal_msg.pose.pose.orientation.w = position['w']
 
-#         self.get_logger().info(f"Sending goal to {position['name']}: ({position['x']}, {position['y']})")
-
-#         # Ensure action server is available
 #         if not self.client.wait_for_server(timeout_sec=10.0):
-#             self.get_logger().error("Action server not available! Exiting...")
-#             return False
-        
-#         # Send goal and wait for response
-#         self.send_goal_future = self.client.send_goal_async(goal_msg)
-#         self.send_goal_future.add_done_callback(self.goal_response_callback)
+#             self.get_logger().error("❌ Action server not available! Exiting...")
+#             rclpy.shutdown()
+#             return
 
-#         return True  # Goal sent successfully
+#         send_goal_future = self.client.send_goal_async(goal_msg)
+#         send_goal_future.add_done_callback(self.goal_response_callback)
 
 #     def goal_response_callback(self, future):
 #         """Handles the response from the action server"""
 #         goal_handle = future.result()
 #         if not goal_handle.accepted:
-#             self.get_logger().info('Goal rejected by the server')
+#             self.get_logger().info("⚠️ Goal rejected!")
 #             return
-#         self.get_logger().info('Goal accepted, waiting for result...')
+#         self.get_logger().info("✅ Goal accepted, waiting for result...")
 
-#         self.get_result_future = goal_handle.get_result_async()
-#         self.get_result_future.add_done_callback(self.result_callback)
+#         get_result_future = goal_handle.get_result_async()
+#         get_result_future.add_done_callback(self.result_callback)
 
 #     def result_callback(self, future):
 #         """Handles the result when the goal is reached or failed"""
 #         result = future.result()
 #         if result:
-#             self.get_logger().info('Goal successfully reached!')
+#             self.get_logger().info("🎯 Goal successfully reached!")
 #         else:
-#             self.get_logger().info('Goal failed!')
+#             self.get_logger().info("❌ Goal failed!")
+
+#         # Wait for 5 seconds before moving to the next goal
+#         self.get_logger().info("⏳ Waiting for 5 seconds at the goal...")
+#         time.sleep(5)
+
+#         self.current_goal_index += 1  # Move to the next goal
+#         self.send_next_goal()  # Send the next goal
 
 # def main():
 #     rclpy.init()
 #     navigator = NavigateRobot()
+#     rclpy.spin(navigator)  # Keep the node running in a loop
 
-#     for position in navigator.goal_positions:
-#         success = navigator.send_goal(position)
-#         if success:
-#             rclpy.spin(navigator)  # Wait until the goal is reached before sending the next one
+# if __name__ == '__main__':
+#     main()
 
-#     navigator.destroy_node()
-#     rclpy.shutdown()
+
+
+#########################move in one cycle#############
+#####################################################################
+# import rclpy
+# from rclpy.node import Node
+# from rclpy.action import ActionClient
+# from geometry_msgs.msg import PoseStamped
+# from nav2_msgs.action import NavigateToPose
+# from rclpy.timer import Timer
+# import time
+
+# class NavigateRobot(Node):
+#     def __init__(self):
+#         super().__init__('navigate_robot')
+#         self.client = ActionClient(self, NavigateToPose, '/navigate_to_pose')
+#         self.goal_positions = [
+#             {'name': 'home', 'x': 0.4058098261317316, 'y': -0.24153020727258429, 'z': 0.00278071876100996, 'w': 0.9999961337941123},
+#             {'name': 'Sofa', 'x': 2.6413651604488093, 'y': 0.7004190268441755, 'z': -0.6940663812029765, 'w': 0.7199110073361877},
+#             {'name': 'TV', 'x': 4.790321201397294, 'y': -0.20827729058528402, 'z': 0.9990731248784613, 'w': 0.04304522209939696},
+#             {'name': 'Door', 'x': 1.4313656908337922, 'y': -2.251369138635757, 'z': 0.6841051647081836, 'w': 0.7293833858949551}
+#         ]
+#         self.current_goal_index = 0  # Start from the first goal
+#         self.send_next_goal()
+
+#     def send_next_goal(self):
+#         """Send the next goal in the list, then stop after the last goal."""
+#         if self.current_goal_index >= len(self.goal_positions):
+#             self.get_logger().info("✅ All goals reached! Stopping navigation.")
+#             rclpy.shutdown()
+#             return
+
+#         position = self.goal_positions[self.current_goal_index]
+#         self.get_logger().info(f"🚀 Sending goal to {position['name']}: ({position['x']}, {position['y']})")
+
+#         goal_msg = NavigateToPose.Goal()
+#         goal_msg.pose.header.frame_id = 'map'
+#         goal_msg.pose.header.stamp = self.get_clock().now().to_msg()
+#         goal_msg.pose.pose.position.x = position['x']
+#         goal_msg.pose.pose.position.y = position['y']
+#         goal_msg.pose.pose.orientation.z = position['z']
+#         goal_msg.pose.pose.orientation.w = position['w']
+
+#         if not self.client.wait_for_server(timeout_sec=10.0):
+#             self.get_logger().error("❌ Action server not available! Exiting...")
+#             rclpy.shutdown()
+#             return
+
+#         send_goal_future = self.client.send_goal_async(goal_msg)
+#         send_goal_future.add_done_callback(self.goal_response_callback)
+
+#     def goal_response_callback(self, future):
+#         """Handles the response from the action server"""
+#         goal_handle = future.result()
+#         if not goal_handle.accepted:
+#             self.get_logger().info("⚠️ Goal rejected!")
+#             return
+#         self.get_logger().info("✅ Goal accepted, waiting for result...")
+
+#         get_result_future = goal_handle.get_result_async()
+#         get_result_future.add_done_callback(self.result_callback)
+
+#     def result_callback(self, future):
+#         """Handles the result when the goal is reached or failed"""
+#         result = future.result()
+#         if result:
+#             self.get_logger().info("🎯 Goal successfully reached!")
+#         else:
+#             self.get_logger().info("❌ Goal failed!")
+        
+#         self.get_logger().info("⏳ Waiting for 5 seconds before proceeding to the next goal...")
+#         time.sleep(5)  # Halt for 5 seconds
+        
+#         self.current_goal_index += 1  # Move to the next goal
+#         self.send_next_goal()  # Send the next goal
+
+
+# def main():
+#     rclpy.init()
+#     navigator = NavigateRobot()
+#     rclpy.spin(navigator)  # Keep the node running until all goals are reached
 
 # if __name__ == '__main__':
 #     main()
