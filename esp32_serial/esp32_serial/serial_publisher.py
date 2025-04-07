@@ -8,7 +8,7 @@ class SerialReaderNode(Node):
         super().__init__("serial_reader")
 
         # Define Serial Port and Baud Rate
-        self.serial_port = "/dev/ttyUSB1"  # Change this based on your device
+        self.serial_port = "/dev/ttyUSB2"  # Change this based on your device
         self.baud_rate = 115200  
 
         try:

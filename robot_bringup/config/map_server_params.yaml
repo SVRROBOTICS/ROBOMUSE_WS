@@ -1,6 +1,6 @@
 map_server:
   ros__parameters:
-    yaml_filename: "/home/svr/ROBOMUSE_WS/19_march.yaml"
+    yaml_filename: "/home/svr/ROBOMUSE_WS/Robotics_lab.yaml"
     topic_name: "map"
     frame_id: map
     odom_frame: odom

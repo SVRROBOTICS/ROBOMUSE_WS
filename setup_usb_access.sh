@@ -10,11 +10,13 @@ sudo udevadm control --reload-rules
 # Step 3: Trigger udev to apply the changes
 echo "Triggering udev ..."
 sudo udevadm trigger
+sudo service udev restart
 
 # Step 4: Check the permissions of the device
 echo "Checking device permissions ..."
 ls -l /dev/motor_driver
 ls -l /dev/rplidar
+ls -l /dev/esp_usb
 
 echo "Adding the current user: [$(whoami)] to the dialout group ..."
 sudo usermod -aG dialout $(whoami)
